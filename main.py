@@ -91,7 +91,7 @@ async def update_repos():
             if repo_dir.exists():
                 results.append(f"Updated {repo_name}: {run_git_command(['git', 'pull'], str(repo_dir))}")
             else:
-                results.append(f"Cloned {repo_name}: {run_git_command(['git', 'clone', repo_url, str(repo_dir)], str("./"))}")
+                results.append(f"Cloned {repo_name}: {run_git_command(['git', 'clone', repo_url, str(repo_dir)], './')}")
         
         return {"status": "success", "results": results}
     except Exception as e:
