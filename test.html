@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDroid App Store</title>
+    <style>
+        :root {
+            --primary: #4285f4;
+            --secondary: #34a853;
+            --background: #f5f5f5;
+            --card: #ffffff;
+            --text: #333333;
+            --danger: #ea4335;
+            --warning: #fbbc05;
+            --light-gray: #e0e0e0;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background);
+            color: var(--text);
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .app-card {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 160px;
+            overflow: hidden;
+        }
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+        }
+        .app-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            background-color: var(--light-gray);
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.25rem;
+        }
+        button.primary {
+            background: var(--primary);
+        }
+        button.danger {
+            background: var(--danger);
+        }
+        button.warning {
+            background: var(--warning);
+            color: black;
+        }
+        .status-panel {
+            background: var(--card);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-message {
+            background: #ffebee;
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .app-name {
+            font-weight: bold;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        
+        /* Detail view styles */
+        .app-detail {
+            display: none;
+            background: var(--card);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .app-detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .app-detail-icon {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-right: 1.5rem;
+            border-radius: 8px;
+            background-color: var(--light-gray);
+        }
+        .app-detail-info {
+            flex: 1;
+        }
+        .app-detail-readme {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid var(--light-gray);
+        }
+        .app-detail-versions {
+            margin-top: 1.5rem;
+        }
+        .version-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .close-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+        .back-button {
+            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .back-arrow {
+            font-size: 1.2rem;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        .tab-button {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text);
+            margin: 0;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-button.active {
+            border-bottom: 3px solid var(--primary);
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .app-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            .app-detail-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            .app-detail-icon {
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>SDroid App Store</h1>
+        <div class="actions">
+            <button id="init-btn" class="primary">Initialize Repositories</button>
+            <button id="refresh-btn">Refresh All Repos</button>
+            <button id="check-status-btn" class="warning">Check Status</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div id="status-panel" class="status-panel" style="display: none;">
+            <h3>System Status</h3>
+            <div id="status-content"></div>
+        </div>
+        
+        <div id="error" class="error-message" style="display: none;"></div>
+        
+        <div id="loading" class="loading">
+            Loading applications...
+        </div>
+        
+        <!-- Main view with app cards -->
+        <div id="app-grid-container">
+            <div id="app-container" class="app-grid"></div>
+        </div>
+        
+        <!-- Detail view for selected app -->
+        <div id="app-detail" class="app-detail">
+            <button id="back-button" class="back-button">
+                <span class="back-arrow">←</span> Back to Apps
+            </button>
+            
+            <div class="app-detail-header">
+                <img id="detail-icon" class="app-detail-icon" src="" alt="App icon">
+                <div class="app-detail-info">
+                    <h2 id="detail-name"></h2>
+                </div>
+            </div>
+            
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="readme">README</button>
+                <button class="tab-button" data-tab="versions">Versions</button>
+            </div>
+            
+            <div id="readme-tab" class="tab-content active">
+                <div id="detail-readme" class="app-detail-readme"></div>
+            </div>
+            
+            <div id="versions-tab" class="tab-content">
+                <div id="detail-versions" class="app-detail-versions"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let allApps = []; // Store all app data for detail view
+        
+        // Helper function to convert markdown to HTML
+        function markdownToHtml(markdown) {
+            if (!markdown) return '';
+            
+            // Handle headings
+            markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+            
+            // Handle bold and italic
+            markdown = markdown.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+            markdown = markdown.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+            
+            // Handle links
+            markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/gim, '<a href="$2" target="_blank">$1</a>');
+            
+            // Handle lists
+            markdown = markdown.replace(/^\s*- (.*$)/gim, '<li>$1</li>');
+            
+            // Handle paragraphs
+            const paragraphs = markdown.split(/\n\s*\n/);
+            return paragraphs.map(p => {
+                if (p.trim().startsWith('<h') || p.trim().startsWith('<li>')) {
+                    return p;
+                }
+                return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+            }).join('');
+        }
+        
+        async function fetchWithTimeout(resource, options = {}) {
+            const { timeout = 8000 } = options;
+            
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            
+            const response = await fetch(resource, {
+                ...options,
+                signal: controller.signal
+            });
+            
+            clearTimeout(id);
+            
+            return response;
+        }
+        
+        async function checkServerStatus() {
+            try {
+                const response = await fetchWithTimeout(`${API_URL}/api/status`, {
+                    timeout: 5000
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Server is not responding properly');
+                }
+                
+                const status = await response.json();
+                displayStatus(status);
+                return status;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    showError('Server connection timed out. Is the server running?');
+                } else {
+                    showError(`Server error: ${error.message}`);
+                }
+                return null;
+            }
+        }
+        
+        function displayStatus(status) {
+            const statusPanel = document.getElementById('status-panel');
+            const statusContent = document.getElementById('status-content');
+            
+            statusPanel.style.display = 'block';
+            
+            statusContent.innerHTML = `
+                <p><strong>Main Repository:</strong> ${status.mainRepoInitialized ? '✅ Initialized' : '❌ Not initialized'}</p>
+                <p><strong>Repos Config:</strong> ${status.reposJsonExists ? '✅ Available' : '❌ Missing'}</p>
+                <p><strong>Number of Repositories:</strong> ${status.reposCount}</p>
+                <p><strong>Base Directory:</strong> ${status.baseDir}</p>
+            `;
+        }
+        
+        async function fetchRepos() {
+            try {
+                const response = await fetch(`${API_URL}/GetRepos`);
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Repositories not initialized. Click "Initialize Repositories" first.');
+                    }
+                    throw new Error('Failed to fetch repos');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching repos:', error);
+                throw error;
+            }
+        }
+        
+        async function fetchRepoDetails(repoName) {
+            try {
+                const response = await fetch(`${API_URL}/GetDetails/${repoName}`);
+                if (!response.ok) throw new Error('Failed to fetch details');
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching details for ${repoName}:`, error);
+                throw error;
+            }
+        }
+        
+        async function initializeRepos() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                
+                // Step 1: Update repo list
+                await fetch(`${API_URL}/UpdateRepoList`, { method: 'POST' });
+                
+                // Step 2: Update all repos
+                await fetch(`${API_URL}/UpdateRepos`, { method: 'POST' });
+                
+                await initApp();
+                await checkServerStatus();
+                
+                showMessage('Repositories initialized successfully!');
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        async function refreshRepos() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                
+                await fetch(`${API_URL}/UpdateRepoList`, { method: 'POST' });
+                await fetch(`${API_URL}/UpdateRepos`, { method: 'POST' });
+                await initApp();
+                showMessage('Repositories refreshed successfully!');
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.backgroundColor = '#ffebee';
+            errorDiv.style.color = 'var(--danger)';
+            errorDiv.style.display = 'block';
+        }
+        
+        function showMessage(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.backgroundColor = '#e8f5e9';
+            errorDiv.style.color = '#2e7d32';
+            errorDiv.style.display = 'block';
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+                errorDiv.style.backgroundColor = '#ffebee';
+                errorDiv.style.color = 'var(--danger)';
+            }, 5000);
+        }
+        
+        function createAppCard(app) {
+            const card = document.createElement('div');
+            card.className = 'app-card';
+            card.dataset.name = app.name;
+            
+            // Create image with fallback
+            const iconSrc = `${API_URL}/GetFavicon/${app.name}`;
+            
+            card.innerHTML = `
+                <img class="app-icon" src="${iconSrc}" alt="${app.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'80\\' height=\\'80\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'%23757575\\' stroke-width=\\'2\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\'%3E%3Crect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'2\\' ry=\\'2\\'%3E%3C/rect%3E%3Cline x1=\\'9\\' y1=\\'9\\' x2=\\'15\\' y2=\\'15\\'%3E%3C/line%3E%3Cline x1=\\'15\\' y1=\\'9\\' x2=\\'9\\' y2=\\'15\\'%3E%3C/line%3E%3C/svg%3E'">
+                <div class="app-name">${app.name}</div>
+            `;
+            
+            card.addEventListener('click', () => showAppDetail(app));
+            return card;
+        }
+        
+        function showAppDetail(app) {
+            // Hide grid and show detail view
+            document.getElementById('app-grid-container').style.display = 'none';
+            document.getElementById('app-detail').style.display = 'block';
+            
+            // Set app details
+            document.getElementById('detail-name').textContent = app.name;
+            
+            // Set icon with fallback
+            const detailIcon = document.getElementById('detail-icon');
+            detailIcon.src = `${API_URL}/GetFavicon/${app.name}`;
+            detailIcon.onerror = function() {
+                this.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23757575\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Crect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\' ry=\'2\'%3E%3C/rect%3E%3Cline x1=\'9\' y1=\'9\' x2=\'15\' y2=\'15\'%3E%3C/line%3E%3Cline x1=\'15\' y1=\'9\' x2=\'9\' y2=\'15\'%3E%3C/line%3E%3C/svg%3E';
+            };
+            
+            // Set README content
+            document.getElementById('detail-readme').innerHTML = markdownToHtml(app.readme) || '<p>No README available for this application.</p>';
+            
+            // Set versions
+            const versionsContainer = document.getElementById('detail-versions');
+            versionsContainer.innerHTML = '';
+            
+            if (app.versions.length > 0) {
+                app.versions.forEach(version => {
+                    const versionItem = document.createElement('div');
+                    versionItem.className = 'version-item';
+                    versionItem.innerHTML = `
+                        <div>
+                            <strong>${version.name}</strong>
+                            <div>Size: ${formatBytes(version.size)}</div>
+                            <div>Updated: ${formatDate(version.modified)}</div>
+                        </div>
+                        <button onclick="installApk('${app.name}', '${version.name}')">Download</button>
+                    `;
+                    versionsContainer.appendChild(versionItem);
+                });
+            } else {
+                versionsContainer.innerHTML = '<p>No versions available for this application.</p>';
+            }
+            
+            // Set active tab
+            document.querySelector('.tab-button.active').classList.remove('active');
+            document.querySelector('.tab-content.active').classList.remove('active');
+            document.querySelector('[data-tab="readme"]').classList.add('active');
+            document.getElementById('readme-tab').classList.add('active');
+        }
+        
+        function hideAppDetail() {
+            document.getElementById('app-grid-container').style.display = 'block';
+            document.getElementById('app-detail').style.display = 'none';
+        }
+        
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+        
+        async function initApp() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                
+                const { repos } = await fetchRepos();
+                const appContainer = document.getElementById('app-container');
+                appContainer.innerHTML = '';
+                allApps = [];
+                
+                if (repos.length === 0) {
+                    appContainer.innerHTML = '<p>No repositories found. Try initializing or refreshing repositories.</p>';
+                    return;
+                }
+                
+                for (const repoName of repos) {
+                    try {
+                        const details = await fetchRepoDetails(repoName);
+                        allApps.push(details);
+                        appContainer.appendChild(createAppCard(details));
+                    } catch (error) {
+                        console.error(`Skipping ${repoName}:`, error);
+                    }
+                }
+            } catch (error) {
+                showError(error.message);
+                const appContainer = document.getElementById('app-container');
+                appContainer.innerHTML = '';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function installApk(repoName, fileName) {
+            const url = `${API_URL}/GetFile/${repoName}/${fileName}`;
+            if (/Android/i.test(navigator.userAgent)) {
+                // Android intent handling
+                window.location.href = `intent://${url.replace('http://', '')}#Intent;scheme=http;type=application/vnd.android.package-archive;end`;
+            } else {
+                // Direct download for non-Android
+                window.open(url, '_blank');
+            }
+        }
+        
+        // Initialize
+        document.getElementById('init-btn').addEventListener('click', initializeRepos);
+        document.getElementById('refresh-btn').addEventListener('click', refreshRepos);
+        document.getElementById('check-status-btn').addEventListener('click', checkServerStatus);
+        document.getElementById('back-button').addEventListener('click', hideAppDetail);
+        
+        // Tab functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.dataset.tab;
+                
+                // Update active tab button
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+                
+                // Update active tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+        
+        // On page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Hide detail view initially
+            document.getElementById('app-detail').style.display = 'none';
+            
+            // First check server status
+            const status = await checkServerStatus();
+            
+            // Only try to load apps if server is responding and repos are initialized
+            if (status && status.mainRepoInitialized && status.reposJsonExists) {
+                initApp();
+            } else {
+                document.getElementById('loading').style.display = 'none';
+                if (status) {
+                    showError('Repository not fully initialized. Click "Initialize Repositories" to get started.');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
