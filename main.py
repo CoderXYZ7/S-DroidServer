@@ -48,7 +48,7 @@ async def init_main_repo():
             return True
         else:
             print("Cloning main repository...")
-            run_git_command(["git", "clone", MAIN_REPO_URL, str(MAIN_REPO_DIR)], str(BASE_DIR))
+            run_git_command(["git", "clone", MAIN_REPO_URL, str(MAIN_REPO_DIR)], str("./"))
             print("Main repository cloned successfully")
             return True
     except Exception as e:
@@ -65,7 +65,7 @@ async def update_repo_list():
             run_git_command(["git", "pull"], str(MAIN_REPO_DIR))
         else:
             print("Cloning repository...")
-            run_git_command(["git", "clone", MAIN_REPO_URL, str(MAIN_REPO_DIR)], str(BASE_DIR))
+            run_git_command(["git", "clone", MAIN_REPO_URL, str(MAIN_REPO_DIR)], str("./"))
         return {"status": "success", "message": "Repository updated"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -91,7 +91,7 @@ async def update_repos():
             if repo_dir.exists():
                 results.append(f"Updated {repo_name}: {run_git_command(['git', 'pull'], str(repo_dir))}")
             else:
-                results.append(f"Cloned {repo_name}: {run_git_command(['git', 'clone', repo_url, str(repo_dir)], str(BASE_DIR))}")
+                results.append(f"Cloned {repo_name}: {run_git_command(['git', 'clone', repo_url, str(repo_dir)], str("./"))}")
         
         return {"status": "success", "results": results}
     except Exception as e:
