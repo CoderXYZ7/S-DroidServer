@@ -9,7 +9,6 @@ function help() {
     echo "Options:"
     echo "  -p PORT   Set the port (default: 3357)"
     echo "  -h        Show this help message"
-    echo "  -i        Initialize the server" #Runs init.sh
 }
 
 # Parse command-line options
@@ -17,7 +16,6 @@ while getopts "p:h:i" opt; do
     case $opt in
         p) PORT=$OPTARG;;
         h) help; exit 0;;
-        i) ./init.sh; exit 0;;
         ?) echo "Invalid option: -$OPTARG"; exit 1;;
     esac
 done
