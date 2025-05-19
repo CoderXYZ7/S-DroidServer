@@ -13,12 +13,3 @@ curl -s -X POST "$API/UpdateRepos"; echo
 
 echo "Testing /GetRepos"
 curl -s "$API/GetRepos"; echo
-
-echo "Testing /GetDetails/testrepo"
-curl -s "$API/GetDetails/testrepo"; echo
-
-echo "Testing /GetFile/testrepo/app.apk"
-curl -s -O "$API/GetFile/testrepo/app.apk"
-
-echo "Testing /GetFavicon/testrepo"
-curl -s -O "$API/GetFavicon/testrepo"
